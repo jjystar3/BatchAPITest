@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class WeaterConfig {
 
-	String serviceKey = "";
+	String serviceKey = "5FLwWX19bZ8QF%2BzjaCAtXOjAnwu8Ozh8aRsfrOXL0%2B6XHnVB%2Bis9P8qJTjqicRSMxVyHq%2Fal8lxwHWPAbfHFkg%3D%3D";
 	String dataType = "JSON";
 	String code = "11B20201";	
 	String ExecutionContext;
@@ -105,9 +105,14 @@ public class WeaterConfig {
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			Root root = null;
 			root = mapper.readValue(ExecutionContext, Root.class);
-			System.out.println(root.response.header.resultCode);
-			System.out.println(root.response.header.resultMsg);
-			System.out.println(root.response.body.totalCount);
+			System.out.println("resultCode: " + root.response.header.resultCode);
+			System.out.println("resultMsg: " + root.response.header.resultMsg);
+			System.out.println("totalCount: " + root.response.body.totalCount);
+			
+			ExecutionContext = root.response.header.resultCode + "-"
+							+ root.response.header.resultMsg + "-"
+							+ root.response.body.totalCount;
+			
 			return RepeatStatus.FINISHED;
 		});
 	}
@@ -115,15 +120,13 @@ public class WeaterConfig {
 	@Bean
 	public Tasklet test3Tasklet() throws IOException{//예외처리
 		return((contribution, chunkContext)->{
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			Root root = null;
-			root = mapper.readValue(ExecutionContext, Root.class);
-
+			
+			String[] results = ExecutionContext.split("-");
+			
 			ApiResult apiResult = ApiResult.builder()
-										.resultCode(root.response.header.resultCode)
-										.resultMsg(root.response.header.resultMsg)
-										.totalCount(root.response.body.totalCount)
+										.resultCode(results[0])
+										.resultMsg(results[1])
+										.totalCount(Integer.parseInt(results[2]))
 										.build();
 			
 			apiResultRepository.save(apiResult);
