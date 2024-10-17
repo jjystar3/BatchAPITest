@@ -117,9 +117,8 @@ public class WeaterConfig {
 		return((contribution, chunkContext)->{
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			String weather = ExecutionContext;
 			Root root = null;
-			root = mapper.readValue(weather, Root.class);
+			root = mapper.readValue(ExecutionContext, Root.class);
 
 			ApiResult apiResult = ApiResult.builder()
 										.resultCode(root.response.header.resultCode)
