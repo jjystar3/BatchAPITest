@@ -11,6 +11,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.scope.context.StepContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -27,10 +28,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class WeaterConfig {
 
-	String serviceKey = "";
+	String serviceKey = "5FLwWX19bZ8QF%2BzjaCAtXOjAnwu8Ozh8aRsfrOXL0%2B6XHnVB%2Bis9P8qJTjqicRSMxVyHq%2Fal8lxwHWPAbfHFkg%3D%3D";
 	String dataType = "JSON";
 	String code = "11B20201";	
-	String ExecutionContext;
 	
 	@Autowired
 	ApiResultRepository apiResultRepository;
@@ -93,7 +93,8 @@ public class WeaterConfig {
 	        conn.disconnect();
 	        System.out.println(sb.toString());
 	        
-	        ExecutionContext = sb.toString();
+	        StepContext context = chunkContext.getStepContext();
+	        context.getStepExecution().getJobExecution().getExecutionContext().put("APIString", sb.toString());
 			return RepeatStatus.FINISHED;
 		});
 	}
@@ -104,14 +105,20 @@ public class WeaterConfig {
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			Root root = null;
-			root = mapper.readValue(ExecutionContext, Root.class);
+
+	        StepContext context = chunkContext.getStepContext();
+			Object apiString = context.getStepExecution().getJobExecution().getExecutionContext().get("APIString");
+			
+			root = mapper.readValue(apiString.toString(), Root.class);
 			System.out.println("resultCode: " + root.response.header.resultCode);
 			System.out.println("resultMsg: " + root.response.header.resultMsg);
 			System.out.println("totalCount: " + root.response.body.totalCount);
 			
-			ExecutionContext = root.response.header.resultCode + "-"
+			String jsonString = root.response.header.resultCode + "-"
 							+ root.response.header.resultMsg + "-"
 							+ root.response.body.totalCount;
+			
+			context.getStepExecution().getJobExecution().getExecutionContext().put("JSONString", jsonString);
 			
 			return RepeatStatus.FINISHED;
 		});
@@ -121,7 +128,10 @@ public class WeaterConfig {
 	public Tasklet test3Tasklet() throws IOException{//예외처리
 		return((contribution, chunkContext)->{
 			
-			String[] results = ExecutionContext.split("-");
+	        StepContext context = chunkContext.getStepContext();
+			Object jsonString = context.getStepExecution().getJobExecution().getExecutionContext().get("JSONString");
+			
+			String[] results = jsonString.toString().split("-");
 			
 			ApiResult apiResult = ApiResult.builder()
 										.resultCode(results[0])
