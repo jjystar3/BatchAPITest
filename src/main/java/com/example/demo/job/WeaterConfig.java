@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class WeaterConfig {
 
-	String serviceKey = "5FLwWX19bZ8QF%2BzjaCAtXOjAnwu8Ozh8aRsfrOXL0%2B6XHnVB%2Bis9P8qJTjqicRSMxVyHq%2Fal8lxwHWPAbfHFkg%3D%3D";
+	String serviceKey = "";
 	String dataType = "JSON";
 	String code = "11B20201";	
 	
